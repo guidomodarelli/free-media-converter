@@ -1,0 +1,14 @@
+{
+  "name": "free-media-converter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Helper scripts for running MediaBunny conversions",
+  "type": "module",
+  "main": "mediabunny_convert.mjs",
+  "scripts": {
+    "convert": "node mediabunny_convert.mjs"
+  },
+  "dependencies": {
+    "mediabunny": "1.25.0"
+  }
+}

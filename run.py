@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Free Media Converter CLI
-Convierte archivos de audio y video entre diferentes formatos usando FFmpeg.
+Convierte archivos de audio y video entre diferentes formatos usando MediaBunny.
 """
 
 import argparse
@@ -10,12 +10,15 @@ import subprocess
 import sys
 from pathlib import Path
 
+BASE_DIR = Path(__file__).resolve().parent
+CONVERTER_SCRIPT = BASE_DIR / 'mediabunny_convert.mjs'
 
-def check_ffmpeg():
-    """Verifica si FFmpeg está instalado en el sistema."""
+
+def check_mediabunny():
+    """Verifica si Node.js y MediaBunny están disponibles en el entorno."""
     try:
-        result = subprocess.run(['ffmpeg', '-version'],
-                              capture_output=True, text=True, check=True)
+        subprocess.run(['node', '-e', "require('mediabunny');"],
+                       capture_output=True, text=True, check=True)
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
@@ -23,12 +26,12 @@ def check_ffmpeg():
 
 def get_supported_audio_formats():
     """Retorna los formatos de audio soportados."""
-    return ['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg', 'wma']
+    return ['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg']
 
 
 def get_supported_video_formats():
     """Retorna los formatos de video soportados."""
-    return ['mp4', 'mkv', 'avi', 'mov', 'webm', 'flv', 'wmv', 'm4v']
+    return ['mp4', 'mov', 'mkv', 'webm', 'm4v']
 
 
 def get_all_supported_formats():
@@ -44,34 +47,13 @@ def is_video_format(file_path):
 
 
 def detect_media_type(file_path):
-    """Detecta si un archivo es de audio o video usando FFprobe."""
-    try:
-        cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', file_path]
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-
-        import json
-        data = json.loads(result.stdout)
-
-        has_video = any(stream.get('codec_type') == 'video' for stream in data.get('streams', []))
-        has_audio = any(stream.get('codec_type') == 'audio' for stream in data.get('streams', []))
-
-        if has_video:
-            return 'video'
-        elif has_audio:
-            return 'audio'
-        else:
-            return 'unknown'
-    except (subprocess.CalledProcessError, json.JSONDecodeError, FileNotFoundError):
-        # Fallback a detección por extensión
-        if is_video_format(file_path):
-            return 'video'
-        else:
-            return 'audio'
+    """Determina si un archivo es de audio o video basándose en la extensión."""
+    return 'video' if is_video_format(file_path) else 'audio'
 
 
 def convert_media(input_file, output_file, output_format, quality='192k'):
     """
-    Convierte un archivo de audio o video al formato especificado.
+    Convierte un archivo de audio o video al formato especificado usando MediaBunny.
 
     Args:
         input_file (str): Ruta del archivo de entrada
@@ -83,82 +65,42 @@ def convert_media(input_file, output_file, output_format, quality='192k'):
         print(f"❌ Error: El archivo '{input_file}' no existe.")
         return False
 
-    # Detectar tipo de media
     media_type = detect_media_type(input_file)
-
-    # Determinar si el formato de salida es de video o audio
     output_is_video = output_format.lower() in get_supported_video_formats()
 
     print(f"🔍 Detectado: {media_type}")
     print(f"🎯 Convirtiendo a: {'video' if output_is_video else 'audio'}")
 
-    # Construir el comando FFmpeg
-    cmd = ['ffmpeg', '-i', input_file]
-
-    if output_is_video:
-        # Configuración para video
-        if output_format.lower() == 'mp4':
-            cmd.extend(['-codec:v', 'libx264', '-codec:a', 'aac'])
-            if quality != '192k':  # Para video, quality puede ser resolución
-                if quality.endswith('p'):
-                    height = quality.rstrip('p')
-                    cmd.extend(['-vf', f'scale=-2:{height}'])
-        elif output_format.lower() == 'mkv':
-            cmd.extend(['-codec:v', 'libx264', '-codec:a', 'aac'])
-            if quality != '192k' and quality.endswith('p'):
-                height = quality.rstrip('p')
-                cmd.extend(['-vf', f'scale=-2:{height}'])
-        elif output_format.lower() == 'avi':
-            cmd.extend(['-codec:v', 'libxvid', '-codec:a', 'libmp3lame'])
-        elif output_format.lower() == 'mov':
-            cmd.extend(['-codec:v', 'libx264', '-codec:a', 'aac'])
-        elif output_format.lower() == 'webm':
-            cmd.extend(['-codec:v', 'libvpx-vp9', '-codec:a', 'libopus'])
-        elif output_format.lower() == 'flv':
-            cmd.extend(['-codec:v', 'libx264', '-codec:a', 'aac'])
-        elif output_format.lower() == 'wmv':
-            cmd.extend(['-codec:v', 'wmv2', '-codec:a', 'wmav2'])
-        elif output_format.lower() == 'm4v':
-            cmd.extend(['-codec:v', 'libx264', '-codec:a', 'aac'])
-
-        # Agregar bitrate de audio para video
-        cmd.extend(['-b:a', '128k'])
-
-    else:
-        # Configuración para audio (código original)
-        if output_format.lower() == 'mp3':
-            cmd.extend(['-codec:a', 'libmp3lame', '-b:a', quality])
-        elif output_format.lower() == 'wav':
-            cmd.extend(['-codec:a', 'pcm_s16le'])
-        elif output_format.lower() == 'flac':
-            cmd.extend(['-codec:a', 'flac'])
-        elif output_format.lower() == 'aac':
-            cmd.extend(['-codec:a', 'aac', '-b:a', quality])
-        elif output_format.lower() == 'm4a':
-            cmd.extend(['-codec:a', 'aac', '-b:a', quality])
-        elif output_format.lower() == 'ogg':
-            cmd.extend(['-codec:a', 'libvorbis', '-b:a', quality])
-        elif output_format.lower() == 'wma':
-            cmd.extend(['-codec:a', 'wmav2', '-b:a', quality])
-
-    # Sobrescribir archivo si existe
-    cmd.extend(['-y', output_file])
+    cmd = [
+        'node',
+        str(CONVERTER_SCRIPT),
+        '--input',
+        input_file,
+        '--output',
+        output_file,
+        '--format',
+        output_format.lower(),
+        '--quality',
+        quality,
+    ]
 
     try:
-        print(f"🔄 Convirtiendo '{input_file}' a '{output_file}'...")
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        print(f"✅ Conversión completada exitosamente!")
+        print(f"🔄 Convirtiendo '{input_file}' a '{output_file}' con MediaBunny...")
+        subprocess.run(cmd, check=True)
+        print("✅ Conversión completada exitosamente!")
         print(f"📁 Archivo guardado en: {output_file}")
         return True
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Error durante la conversión:")
-        print(f"   {e.stderr}")
+    except FileNotFoundError:
+        print("❌ Error: Node.js no está instalado o no se encuentra en el PATH.")
+        return False
+    except subprocess.CalledProcessError:
+        print("❌ Error durante la conversión con MediaBunny. Revisa la salida anterior para más detalles.")
         return False
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="🎵🎬 Free Media Converter - Convierte archivos de audio y video usando FFmpeg",
+        description="🎵🎬 Free Media Converter - Convierte archivos de audio y video usando MediaBunny",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos de uso:
@@ -209,14 +151,11 @@ Ejemplos de uso:
         parser.error("Se requiere especificar un archivo de entrada (-i/--input)")
         return
 
-    # Verificar que FFmpeg esté instalado
-    if not check_ffmpeg():
-        print("❌ Error: FFmpeg no está instalado o no está en el PATH.")
-        print("💡 Instala FFmpeg con:")
-        print("   Ubuntu/Debian: sudo apt install ffmpeg")
-        print("   Fedora: sudo dnf install ffmpeg")
-        print("   Arch: sudo pacman -S ffmpeg")
-        print("   macOS: brew install ffmpeg")
+    # Verificar que MediaBunny esté disponible
+    if not check_mediabunny():
+        print("❌ Error: Node.js o MediaBunny no están disponibles en el entorno.")
+        print("💡 Instala Node.js (>=18) y ejecuta desde la raíz del proyecto:")
+        print("   npm install")
         sys.exit(1)
 
     input_file = args.input

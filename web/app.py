@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Free Media Converter - Web Interface
-Interfaz web para convertir archivos de audio y video usando FFmpeg.
+Interfaz web para convertir archivos de audio y video usando MediaBunny.
 """
 
 import os
@@ -16,7 +16,7 @@ from flask import Flask, render_template, request, jsonify, send_file, flash, re
 # Importar funciones del CLI
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from run import (
-    check_ffmpeg,
+    check_mediabunny,
     get_supported_audio_formats,
     get_supported_video_formats,
     convert_media,
@@ -64,8 +64,8 @@ def get_file_info(filepath):
 @app.route('/')
 def index():
     """Página principal."""
-    # Verificar FFmpeg
-    ffmpeg_available = check_ffmpeg()
+    # Verificar MediaBunny/Node
+    mediabunny_available = check_mediabunny()
 
     formats = {
         'audio': get_supported_audio_formats(),
@@ -73,7 +73,7 @@ def index():
     }
 
     return render_template('index.html',
-                         ffmpeg_available=ffmpeg_available,
+                         mediabunny_available=mediabunny_available,
                          formats=formats)
 
 
@@ -180,7 +180,7 @@ def download_file(filename):
 def status():
     """Verifica el estado del sistema."""
     return jsonify({
-        'ffmpeg_available': check_ffmpeg(),
+        'mediabunny_available': check_mediabunny(),
         'supported_formats': {
             'audio': get_supported_audio_formats(),
             'video': get_supported_video_formats()
@@ -207,9 +207,9 @@ def cleanup_files():
 
 
 if __name__ == '__main__':
-    if not check_ffmpeg():
-        print("⚠️  Advertencia: FFmpeg no está instalado. La aplicación web no funcionará correctamente.")
-        print("💡 Instala FFmpeg antes de continuar.")
+    if not check_mediabunny():
+        print("⚠️  Advertencia: Node.js o MediaBunny no están instalados. La aplicación web no funcionará correctamente.")
+        print("💡 Ejecuta npm install desde la raíz del proyecto.")
 
     print("🌐 Iniciando Free Media Converter Web Interface...")
     print("📍 Accede a: http://localhost:5001")

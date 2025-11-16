@@ -1,11 +1,11 @@
 # 🎵🎬 Free Media Converter
 
-**Free Media Converter** es una herramienta de línea de comandos ligera y fácil de usar que te permite convertir archivos de **audio y video** entre distintos formatos utilizando el poder de [FFmpeg](https://ffmpeg.org/).
+**Free Media Converter** es una herramienta de línea de comandos ligera y fácil de usar que te permite convertir archivos de **audio y video** entre distintos formatos aprovechando el motor moderno de [MediaBunny](https://mediabunny.dev/guide/introduction), basado en WebCodecs y compatible con Node.js.
 
 Diseñado para usuarios que buscan una solución rápida y flexible, este script en Python ofrece:
 
-* 🎧 Conversión entre formatos de audio populares (MP3, WAV, FLAC, AAC, M4A, OGG, WMA)
-* 🎥 Soporte para formatos de video comunes (MP4, MKV, AVI, MOV, WebM, entre otros)
+* 🎧 Conversión entre formatos de audio populares (MP3, WAV, FLAC, AAC, M4A, OGG)
+* 🎥 Soporte para formatos de video comunes (MP4, MOV, MKV, WebM, M4V)
 * ⚙️ Control de calidad mediante bitrate
 * 🚫 Manejo de errores automático y verificación de dependencias
 * 🖥️ Interfaz CLI intuitiva para flujos de trabajo rápidos y eficientes
@@ -15,22 +15,27 @@ Ideal para creadores de contenido, desarrolladores, podcasters y cualquier perso
 ## 📋 Requisitos
 
 - Python 3.6+
-- FFmpeg instalado en el sistema
+- Node.js 18+ (incluye npm)
+- Ejecuta `npm install` en la raíz del repositorio para instalar MediaBunny
 
-### Instalación de FFmpeg
+### Instalación de Node.js y dependencias
 
 ```bash
 # Ubuntu/Debian
-sudo apt install ffmpeg
+sudo apt update
+sudo apt install nodejs npm
 
 # Fedora/Red Hat
-sudo dnf install ffmpeg
+sudo dnf install nodejs npm
 
 # Arch Linux
-sudo pacman -S ffmpeg
+sudo pacman -S nodejs npm
 
 # macOS (con Homebrew)
-brew install ffmpeg
+brew install node
+
+# Instalar dependencias de Node (MediaBunny)
+npm install
 ```
 
 ### Instalación de dependencias Python
@@ -44,6 +49,8 @@ pip install -r requirements.txt
 ```
 
 ## 🚀 Uso
+
+> **Nota:** Ejecuta `npm install` desde la raíz del repositorio antes de usar la CLI o la interfaz web para que MediaBunny esté disponible.
 
 ### 🖥️ Línea de comandos (CLI)
 
@@ -77,6 +84,8 @@ python run.py -i presentation.mov -f webm
 ```
 
 ### 🌐 Interfaz Web
+
+> Antes de iniciar la interfaz web, asegúrate de haber ejecutado `npm install` en la raíz del proyecto para instalar MediaBunny.
 
 Para usuarios que prefieren una interfaz gráfica, también incluimos una aplicación web moderna y fácil de usar:
 
@@ -124,16 +133,11 @@ Luego abre tu navegador en: **http://localhost:5001**
 - **AAC** - Advanced Audio Coding
 - **M4A** - MPEG-4 Audio
 - **OGG** - Ogg Vorbis
-- **WMA** - Windows Media Audio
-
 #### 🎥 Video
 - **MP4** - MPEG-4 Video
 - **MKV** - Matroska Video
-- **AVI** - Audio Video Interleave
 - **MOV** - QuickTime Movie
 - **WebM** - Web Media Format
-- **FLV** - Flash Video
-- **WMV** - Windows Media Video
 - **M4V** - iTunes Video
 
 ### Calidades recomendadas
@@ -169,18 +173,18 @@ python run.py -i entrada.wav -o salida_custom.mp3
 ## 🔍 Verificación
 
 El script verificará automáticamente:
-- ✅ Si FFmpeg está instalado
+- ✅ Si Node.js y las dependencias de MediaBunny están instaladas
 - ✅ Si el archivo de entrada existe
 - ✅ Si la conversión fue exitosa
 - 📊 Tamaño del archivo resultante
 
 ## 🐛 Solución de problemas
 
-### FFmpeg no encontrado
+### Node.js o MediaBunny no disponibles
 ```
-❌ Error: FFmpeg no está instalado o no está en el PATH.
+❌ Error: Node.js o MediaBunny no están disponibles en el entorno.
 ```
-**Solución:** Instala FFmpeg usando los comandos de instalación arriba.
+**Solución:** Instala Node.js (>=18) y vuelve a ejecutar `npm install` en la raíz del repositorio antes de lanzar la CLI o la interfaz web.
 
 ### Archivo no encontrado
 ```
@@ -189,18 +193,18 @@ El script verificará automáticamente:
 **Solución:** Verifica la ruta del archivo de entrada.
 
 ### Error de conversión
-Si hay errores específicos de FFmpeg, el script mostrará el mensaje de error detallado.
+Si hay errores durante la conversión, revisa la salida que genera MediaBunny (aparece en la terminal o en los logs del servidor web) para identificar el codec o la opción que requiere ajuste.
 
 ## 🎯 Características
 
 - ✨ **Doble interfaz**: CLI para usuarios avanzados y Web para facilidad de uso
-- 🎵 Conversión completa entre formatos de audio (7 formatos)
-- 🎥 Conversión completa entre formatos de video (8 formatos)
+- 🎵 Conversión completa entre formatos de audio (6 formatos)
+- 🎥 Conversión completa entre formatos de video (5 formatos)
 - 🔍 Detección automática del tipo de media (audio/video)
 - ⚙️ Control de calidad/bitrate para audio y resolución para video
 - 📊 Información del archivo resultante con tamaño
 - ❌ Manejo de errores robusto y verificación automática
-- 🔧 Basado en FFmpeg para máxima compatibilidad y calidad
+- 🔧 Impulsado por MediaBunny (WebCodecs + Node) para conversiones modernas y multiplataforma
 - 🌐 Interfaz web moderna con drag & drop
 - 📱 Diseño responsive que funciona en todos los dispositivos
 - 🚀 Perfecto para creadores de contenido, desarrolladores y podcasters

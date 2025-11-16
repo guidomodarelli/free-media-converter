@@ -1,6 +1,8 @@
 #!/bin/bash
 # Quick start script for Free Media Converter Web Interface
 
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
 echo "🎵🎬 Free Media Converter - Web Interface"
 echo "========================================"
 echo ""
@@ -12,25 +14,26 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-# Check if FFmpeg is available
-if ! command -v ffmpeg &> /dev/null; then
-    echo "⚠️  Advertencia: FFmpeg no está instalado"
-    echo "💡 Instala FFmpeg para que la aplicación funcione correctamente:"
-    echo "   Ubuntu/Debian: sudo apt install ffmpeg"
-    echo "   macOS: brew install ffmpeg"
-    echo ""
+# Check if Node.js is available
+if ! command -v node &> /dev/null; then
+    echo "❌ Error: Node.js no está instalado"
+    echo "💡 Instala Node.js (https://nodejs.org) y vuelve a intentar"
+    exit 1
 fi
 
+echo "📦 Instalando dependencias de Node.js (MediaBunny)..."
+(cd "$ROOT_DIR" && npm install)
+
 # Check if virtual environment exists
-if [ ! -d "../.venv" ]; then
+if [ ! -d "$ROOT_DIR/.venv" ]; then
     echo "📦 Creando entorno virtual..."
-    cd .. && python3 -m venv .venv && cd web
+    python3 -m venv "$ROOT_DIR/.venv"
 fi
 
 # Activate virtual environment and install dependencies
-echo "📦 Instalando dependencias..."
-source ../.venv/bin/activate
-pip install -r ../requirements.txt
+echo "📦 Instalando dependencias de Python..."
+source "$ROOT_DIR/.venv/bin/activate"
+pip install -r "$ROOT_DIR/requirements.txt"
 
 echo ""
 echo "🌐 Iniciando servidor web..."
@@ -38,5 +41,5 @@ echo "📍 La aplicación estará disponible en: http://localhost:5001"
 echo "🛑 Presiona Ctrl+C para detener el servidor"
 echo ""
 
-# Start the web application
+cd "$ROOT_DIR/web"
 python app.py
